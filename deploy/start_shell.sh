@@ -103,6 +103,7 @@ function set_nameserver_data() {
 # starts the spark/shark shell container
 function start_shell() {
     IMAGENAME="$image_name:$image_version"
+    echo $IMAGENAME
     NAMESERVER_IP=$(docker inspect $NAMESERVER_ID | \
         grep IPAddress | awk '{print $2}' | tr -d '":,')
 
