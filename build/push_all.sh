@@ -7,7 +7,7 @@ fi
 
 image_list=( "apache-hadoop-hdfs-precise" "dnsmasq-precise" "spark-master" "spark-worker" "spark-shell" "shark-master" "shark-worker" "shark-shell" )
 
-IMAGE_PREFIX="amplab/"
+IMAGE_PREFIX="anantasty/"
 
 # NOTE: the order matters but this is the right one
 for i in ${image_list[@]}; do
