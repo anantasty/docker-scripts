@@ -3,7 +3,7 @@
 #
 FROM apache-hadoop-hdfs-precise:1.2.1
 
-MAINTAINER amplab amp-docker@eecs.berkeley.edu
+MAINTAINER anantasty anant.asty@gmail.com
 
 ENV SCALA_VERSION 2.10.3
 ENV SPARK_VERSION 1.0.0
