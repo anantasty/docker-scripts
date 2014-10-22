@@ -108,8 +108,8 @@ the container images the first time but after that the process is fairly quick.
 When the cluster comes up you should see something like this:
 
 <pre>
-> sudo ./deploy.sh -i amplab/spark:1.1.0 -w 3 
-*** Starting Spark 1.1.0 ***
+> sudo ./deploy.sh -i amplab/spark:0.9.0 -w 3 
+*** Starting Spark 0.9.0 ***
 starting nameserver container
 started nameserver container:  069557913d98a37caf43f8238dfdf181aea5ab30eb42e382db83307e277cfa9e
 DNS host->IP file mapped:      /tmp/dnsdir_12015/0hosts
@@ -146,7 +146,7 @@ nameserver 172.17.0.8
 
 #### Start the Spark shell container as shown above, for example:
 
-	$ sudo /home/andre/docker-scripts/deploy/start_shell.sh -i amplab/spark-shell:1.1.0 -n 069557913d98a37caf43f8
+	$ sudo /home/andre/docker-scripts/deploy/start_shell.sh -i amplab/spark-shell:0.9.0 -n 069557913d98a37caf43f8
 
 The parameter passed with -n is the ID of the nameserver container.
 Then attach to the running shell via the given command, for example:
