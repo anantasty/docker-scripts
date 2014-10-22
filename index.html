@@ -1,0 +1,458 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Docker-scripts by anantasty</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/main.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+
+      <header>
+        <h1>Docker-scripts</h1>
+        <p>Dockerfiles and scripts for Spark and Shark Docker images</p>
+      </header>
+
+      <div id="banner">
+        <span id="logo"></span>
+
+        <a href="https://github.com/anantasty/docker-scripts" class="button fork"><strong>View On GitHub</strong></a>
+        <div class="downloads">
+          <span>Downloads:</span>
+          <ul>
+            <li><a href="https://github.com/anantasty/docker-scripts/zipball/master" class="button">ZIP</a></li>
+            <li><a href="https://github.com/anantasty/docker-scripts/tarball/master" class="button">TAR</a></li>
+          </ul>
+        </div>
+      </div><!-- end banner -->
+
+    <div class="wrapper">
+      <nav>
+        <ul></ul>
+      </nav>
+      <section>
+        <h1>
+<a name="dockerfiles-for-spark-and-shark" class="anchor" href="#dockerfiles-for-spark-and-shark"><span class="octicon octicon-link"></span></a>Dockerfiles for Spark and Shark</h1>
+
+<h2>
+<a name="contents" class="anchor" href="#contents"><span class="octicon octicon-link"></span></a>Contents</h2>
+
+<p>Dockerfiles to build Spark and Shark images for testing and
+development.</p>
+
+<h2>
+<a name="requirements" class="anchor" href="#requirements"><span class="octicon octicon-link"></span></a>Requirements</h2>
+
+<p>Tested on Ubuntu 12.04 (Docker version 0.6.4), Ubuntu 13.10 (Docker 0.7.0 and 0.9.0) with the virtual
+switch
+    lxcbr0
+enabled. For running Docker on Mac and Windows see <a href="http://docs.docker.io">the docs</a>.
+Also tested inside the VirtualBox Tiny Core Linux VirtualBox VM for Docker on
+Mac.</p>
+
+<p>Note: the earlier version of the scripts had problems with newer
+versions of Docker (0.7). If you encounter issues please pull the
+latest changes from <a href="https://github.com/amplab/docker-scripts.git">https://github.com/amplab/docker-scripts.git</a>
+master branch.</p>
+
+<h2>
+<a name="tips-for-running-on-mac-os" class="anchor" href="#tips-for-running-on-mac-os"><span class="octicon octicon-link"></span></a>Tips for running on Mac OS</h2>
+
+<p>If you are running on Mac OS, installed as described
+<a href="http://docs.docker.io/en/latest/installation/mac/">in the Docker installation docs</a>
+you need to run all commands inside the Docker virtual machine by first ssh-ing into it:</p>
+
+<pre>
+$ ./boot2docker ssh
+# User: docker
+# Pwd:  tcuser
+</pre>
+
+<p>Then make sure that <code>python</code> is installed. Otherwise install it via
+<code>tce-ab</code> (search for python and install <code>python.tcz</code>). Newer versions
+of the image that comes with boot2docker also do not have <code>bash</code> installed
+(install package <code>bash.tcz</code>) which is required for the deployment scripts.</p>
+
+<p>Further, make sure that your virtual machine running the Docker daemon and
+the containers has sufficient memory allocated (at least 2GB for two Spark worker
+containers and one master container). This can be done inside the Virtual Box
+GUI under the properties of the virtual machine.</p>
+
+<p>Finally, <code>boot2docker save</code> is a good way to perserve changes to the image
+between restarts of the virtual machine or host computer,
+for example the scripts come in the cloned git repository (see below). </p>
+
+<h2>
+<a name="testing" class="anchor" href="#testing"><span class="octicon octicon-link"></span></a>Testing</h2>
+
+<p>First clone the repository:</p>
+
+<pre><code>$ git clone https://github.com/amplab/docker-scripts.git
+</code></pre>
+
+<p>This repository contains deploy scripts and the sources for the Docker
+image files, which can be easily modified. The main deploy script
+takes the following options.</p>
+
+<pre>
+$ sudo ./deploy/deploy.sh
+usage: ./deploy.sh -i &lt;image&gt; [-w &lt;#workers&gt;] [-v &lt;data_directory&gt;] [-c]
+
+  image:    spark or shark image from:
+                 spark:1.0.0  spark:1.1.0
+                 shark:0.8.0
+</pre>
+
+<p>The script either starts a standalone Spark cluster or a standalone
+Spark/Shark cluster for a given number of worker nodes. Note that
+on the first call it may take a while for Docker to download the
+various images from the repository,</p>
+
+<p>In addition to Spark (and Shark) the cluster also runs a Hadoop HDFS
+filesystem. When the deploy script is run it generates one container
+for the master node, one container for each worker node and one extra
+container running a Dnsmasq DNS forwarder. The latter one can also be
+used to resolve node names on the host, for example to access the
+worker logs via the Spark web UI.</p>
+
+<p>Optionally one can set the number of workers (default: 2) and a data directory
+which is a local path on the host that can be mounted on the master and
+worker containers and will appear under /data.</p>
+
+<p>Both the Spark and Shark shells are started in a separate container.
+This container can be directly started from the deploy script by
+passing "-c" to the deploy script.</p>
+
+<p>Each node (worker and master) also runs a sshd which is
+<em>pre-configured with the given RSA key</em>. Note that you should change
+this key if you plan to expose services running inside the containers.
+Since the permissions of the key when cloned from the repository are
+likely wrong you need to change them if you intend to log in with ssh:</p>
+
+<pre>
+chmod go-rwx apache-hadoop-hdfs-precise/files/id_rsa
+</pre>
+
+<h3>
+<a name="example-running-a-spark-cluster" class="anchor" href="#example-running-a-spark-cluster"><span class="octicon octicon-link"></span></a>Example: Running a Spark cluster</h3>
+
+<p>Starting from the directory in which the repository was cloned do</p>
+
+<h4>
+<a name="deploy-the-cluster" class="anchor" href="#deploy-the-cluster"><span class="octicon octicon-link"></span></a>Deploy the cluster</h4>
+
+<pre><code>$ sudo ./deploy/deploy.sh -i amplab/spark:1.1.0 -w 3 
+</code></pre>
+
+<h4>
+<a name="wait-a-few-seconds" class="anchor" href="#wait-a-few-seconds"><span class="octicon octicon-link"></span></a>Wait a few seconds</h4>
+
+<p>Wait for the "cluster" to come up. Note that it can take longer to download
+the container images the first time but after that the process is fairly quick.
+When the cluster comes up you should see something like this:</p>
+
+<pre>
+&gt; sudo ./deploy.sh -i amplab/spark:1.1.0 -w 3 
+*** Starting Spark 1.1.0 ***
+starting nameserver container
+started nameserver container:  069557913d98a37caf43f8238dfdf181aea5ab30eb42e382db83307e277cfa9e
+DNS host-&gt;IP file mapped:      /tmp/dnsdir_12015/0hosts
+NAMESERVER_IP:                 172.17.0.8
+waiting for nameserver to come up 
+starting master container
+started master container:      f50a65d2ef7b17bffed7075ac2de4a7b52c26adff15bdbe14d3280ef4991c9d6
+MASTER_IP:                     172.17.0.9
+waiting for master ........
+waiting for nameserver to find master 
+starting worker container
+started worker container:  576d7d223f59a6da7a0e73311d1e082fad27895aef53edf3635264fb00b70258
+starting worker container
+started worker container:  5672ea896e179b51fe2f1ae5d542c35706528cd3a768ba523324f434bb2b2413
+starting worker container
+started worker container:  3cdf681f7c99c1e19f7b580ac911e139923e9caca943fd006fb633aac5b20001
+waiting for workers to register .....
+
+***********************************************************************
+start shell via:            sudo /home/andre/docker-scripts/deploy/start_shell.sh -i amplab/spark-shell:0.9.0 -n 069557913d98a37caf43f8238dfdf181aea5ab30eb42e382db83307e277cfa9e 
+
+visit Spark WebUI at:       http://172.17.0.9:8080/
+visit Hadoop Namenode at:   http://172.17.0.9:50070
+ssh into master via:        ssh -i /home/andre/docker-scripts/deploy/../apache-hadoop-hdfs-precise/files/id_rsa -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@172.17.0.9
+
+/data mapped:               
+
+kill master via:           sudo docker kill f50a65d2ef7b17bffed7075ac2de4a7b52c26adff15bdbe14d3280ef4991c9d6
+***********************************************************************
+
+to enable cluster name resolution add the following line to _the top_ of your host's /etc/resolv.conf:
+nameserver 172.17.0.8
+</pre>
+
+<h4>
+<a name="start-the-spark-shell-container-as-shown-above-for-example" class="anchor" href="#start-the-spark-shell-container-as-shown-above-for-example"><span class="octicon octicon-link"></span></a>Start the Spark shell container as shown above, for example:</h4>
+
+<pre><code>$ sudo /home/andre/docker-scripts/deploy/start_shell.sh -i amplab/spark-shell:1.1.0 -n 069557913d98a37caf43f8
+</code></pre>
+
+<p>The parameter passed with -n is the ID of the nameserver container.
+Then attach to the running shell via the given command, for example:</p>
+
+<pre><code>$ sudo docker attach 9ac49b09bf18a13c7
+</code></pre>
+
+<p>If the screen appears to stay blank just hit return to get to the prompt.</p>
+
+<h4>
+<a name="execute-an-example" class="anchor" href="#execute-an-example"><span class="octicon octicon-link"></span></a>Execute an example:</h4>
+
+<pre>
+scala&gt; val textFile = sc.textFile("hdfs://master:9000/user/hdfs/test.txt")
+scala&gt; textFile.count()
+scala&gt; textFile.map({line =&gt; line}).collect()
+</pre>
+
+<h4>
+<a name="terminate-the-cluster" class="anchor" href="#terminate-the-cluster"><span class="octicon octicon-link"></span></a>Terminate the cluster:</h4>
+
+<pre><code>$ sudo ./deploy/kill_all.sh spark
+$ sudo ./deploy/kill_all.sh nameserver
+</code></pre>
+
+<h3>
+<a name="shark" class="anchor" href="#shark"><span class="octicon octicon-link"></span></a>Shark</h3>
+
+<p>Basically the same steps apply only that the Shark images are chosen instead of the Spark ones
+(the former contain in addition to Spark the Shark binaries).</p>
+
+<h4>
+<a name="deploy-the-cluster-1" class="anchor" href="#deploy-the-cluster-1"><span class="octicon octicon-link"></span></a>Deploy the cluster</h4>
+
+<pre><code>$ sudo ./deploy/deploy.sh -i amplab/shark:0.8.0 -w 3
+</code></pre>
+
+<h4>
+<a name="wait-a-few-seconds-1" class="anchor" href="#wait-a-few-seconds-1"><span class="octicon octicon-link"></span></a>Wait a few seconds</h4>
+
+<p>Wait for the "cluster" to come up. Note that it can take longer to download
+the container images the first time but after that the process is fairly quick.
+When the cluster comes up you should see something like this:</p>
+
+<pre>
+*** Starting Shark 0.8.0 + Spark ***
+starting nameserver container
+started nameserver container:  952d22e085c3b74e829e006ab536d45d31800c463832e43d8679bbf3d703940e
+DNS host-&gt;IP file mapped:      /tmp/dnsdir_30578/0hosts
+NAMESERVER_IP:                 172.17.0.13
+waiting for nameserver to come up 
+starting master container
+started master container:      169f253eaddadb19b6eb28e79f148eef892f20d34602ffb42d3e57625dc61652
+MASTER_IP:                     172.17.0.14
+waiting for master ........
+waiting for nameserver to find master 
+starting worker container
+started worker container:  1c6920c96d5ad684a2f591bfb334323c5854cdd7a0da49982baaf77dc4d62ac7
+starting worker container
+started worker container:  7250dcfb882e2d17441c8c59361d10d8c59afb2b295719ba35f59bc72c6f17a5
+starting worker container
+started worker container:  26823e188a2a5a5897ed4b9bf0fca711dc7f98674fe62eb78fb49cf031bec79c
+waiting for workers to register .......
+
+***********************************************************************
+start shell via:            sudo /home/andre/docker-scripts/deploy/start_shell.sh -i amplab/shark-shell:0.8.0 -n 952d22e085c3b74e829e006ab536d45d31800c463832e43d8679bbf3d703940e 
+
+visit Spark WebUI at:       http://172.17.0.14:8080/
+visit Hadoop Namenode at:   http://172.17.0.14:50070
+ssh into master via:        ssh -i /home/andre/docker-scripts/deploy/../apache-hadoop-hdfs-precise/files/id_rsa -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@172.17.0.14
+
+/data mapped:               
+
+kill master via:           sudo docker kill 169f253eaddadb19b6eb28e79f148eef892f20d34602ffb42d3e57625dc61652
+***********************************************************************
+
+to enable cluster name resolution add the following line to _the top_ of your host's /etc/resolv.conf:
+nameserver 172.17.0.13
+</pre>
+
+<h4>
+<a name="start-the-shark-shell-container-as-shown-above-for-example" class="anchor" href="#start-the-shark-shell-container-as-shown-above-for-example"><span class="octicon octicon-link"></span></a>Start the Shark shell container as shown above, for example:</h4>
+
+<pre><code>$ sudo /home/andre/docker-scripts/deploy/start_shell.sh -i amplab/shark-shell:0.8.0 -n 952d22e085c3b74e829e00
+</code></pre>
+
+<p>The parameter passed with -n is the ID of the nameserver container.
+Then attach to the running shell via the given command, for example:</p>
+
+<pre><code>$ sudo docker attach 9ac49b09bf18a13c7
+</code></pre>
+
+<p>If the screen appears to stay blank just hit return to get to the prompt.</p>
+
+<h4>
+<a name="execute-an-example-1" class="anchor" href="#execute-an-example-1"><span class="octicon octicon-link"></span></a>Execute an example:</h4>
+
+<pre>
+shark&gt; CREATE TABLE src(key INT, value STRING);
+shark&gt; LOAD DATA LOCAL INPATH '${env:HIVE_HOME}/examples/files/kv1.txt' INTO TABLE src;
+shark&gt; SELECT COUNT(1) FROM src;
+</pre>
+
+<h4>
+<a name="terminate-the-cluster-1" class="anchor" href="#terminate-the-cluster-1"><span class="octicon octicon-link"></span></a>Terminate the cluster:</h4>
+
+<pre><code>$ sudo ./deploy/kill_all.sh shark
+$ sudo ./deploy/kill_all.sh nameserver
+</code></pre>
+
+<h2>
+<a name="building" class="anchor" href="#building"><span class="octicon octicon-link"></span></a>Building</h2>
+
+<p>If you prefer to build the images yourself (or intend to modify them) rather
+than downloading them from the Docker repository, you can build
+all Spark and Shark images in the correct order via the build script:</p>
+
+<pre><code>$ ./build/build_all.sh
+</code></pre>
+
+<p>The script builds the images in an order that satisfies the chain of
+dependencies:</p>
+
+<p>apache-hadoop-hdfs-precise -&gt; spark-base -&gt; spark-{master, worker, shell}</p>
+
+<p>apache-hadoop-hdfs-precise -&gt; spark-base -&gt; shark-base -&gt; shark-{master, worker, shell}</p>
+
+<p>You can always (re-)build single images by cd-ing into the image directory and doing</p>
+
+<pre><code>$ . build
+</code></pre>
+
+<h2>
+<a name="best-practices-for-dockerfiles-and-startup-scripts" class="anchor" href="#best-practices-for-dockerfiles-and-startup-scripts"><span class="octicon octicon-link"></span></a>Best practices for Dockerfiles and startup scripts</h2>
+
+<p>The following are just some comments that made the generation of the images easier. It
+is not enforced in any way by Docker.</p>
+
+<p>The images and startup scripts follow the following structure in order to reuse
+as much as possible of the image they depend on. There are two types of images,
+<em>base</em> images and <em>leaf</em> images. Leaf images, as the name suggests,
+are images that are leafs in the dependency tree. For example, spark-base as a base
+image depends on apache-hadoop-hdfs-precise. spark-master depends on spark-base as
+its base image and is itself a leaf.</p>
+
+<p>In addition to its Dockerfile, each image has a
+    files/
+subdirectory in its image directory that contains files (config files, data files) that will be copied
+to the
+    root/<em>image_name</em>_files
+directory inside the image.</p>
+
+<h3>
+<a name="base-images" class="anchor" href="#base-images"><span class="octicon octicon-link"></span></a>Base images</h3>
+
+<p>Base images are images that are intended to be extended by other images and therefore do not
+have a default command or entry point. They are good for testing though, e.g, by running
+    /bin/bash
+inside them. </p>
+
+<p>For base images such as spark-base, besides data files the
+    files/
+directory also contains
+    files/configure_spark.sh
+which is a script that contains four functions</p>
+
+<ul>
+<li>  create_spark_directories
+for creating required directories such as the working directory</li>
+<li>  deploy_spark_files
+that would copy files from
+  /root/<em>image_name</em>_files
+to required system path locations</li>
+<li>  configure_spark
+that changes settings in config files and takes the IP of the master as argument</li>
+<li>  prepare_spark
+that calls the previous three in the given order and takes the IP of the master as argument</li>
+</ul>
+
+<p>All of the functions of a <strong>base-image</strong>'s configure script, so also inside
+    files/configure_spark.sh
+except <strong>prepare_spark</strong> first call their corresponding functions in the image the spark-base image depends on (apache-hadoop-hdfs-precise in this case). Therefore all the underlying services get initialized before the top level service. </p>
+
+<h3>
+<a name="leaf-images" class="anchor" href="#leaf-images"><span class="octicon octicon-link"></span></a>Leaf images</h3>
+
+<p>For leaf images such as spark-master, besides data files the
+    files/
+directory also contains
+    files/default_cmd
+that is chosen in the image's Dockerfile to be the default command (or entry point) to the image. This means the command
+inside is executed whenever the container is started.</p>
+
+<p>The default command script executes the following steps in this order</p>
+
+<ol>
+<li>The first thing the default command does is call the prepare
+function of the configure script inside its base image. In this case, the default command script calls function
+prepare_spark
+inside
+/root/spark-base/configure_spark.sh
+which is the location the configure script of spark-base was copied to.</li>
+<li>After that, now that the base images configuration (and the configuration of the images it inherits from) has completed, the
+default command may start services it relies on, such as the Hadoop namenode service in the case of spark-master.</li>
+<li>Finally, the default command script of spark-master runs a second script under userid hdfs
+(the Hadoop HDFS super user), which is
+files/files/run_spark_master.sh
+that actually starts the master.</li>
+</ol>
+
+<p>The spark-worker default command proceeds along the same lines but starts a Spark worker with a Hadoop datanode instead.</p>
+
+<h2>
+<a name="tips" class="anchor" href="#tips"><span class="octicon octicon-link"></span></a>Tips</h2>
+
+<h3>
+<a name="name-resolution-on-host" class="anchor" href="#name-resolution-on-host"><span class="octicon octicon-link"></span></a>Name resolution on host</h3>
+
+<p>In order to resolve names (such as "master", "worker1", etc.) add the IP
+of the nameserver container to the top of /etc/resolv.conf on the host.</p>
+
+<h3>
+<a name="maintaining-local-docker-image-repository" class="anchor" href="#maintaining-local-docker-image-repository"><span class="octicon octicon-link"></span></a>Maintaining local Docker image repository</h3>
+
+<p>After a while building and debugging images the local image repository gets
+full of intermediate images that serve no real purpose other than
+debugging a broken build. To remove these do</p>
+
+<pre><code>$ sudo docker images | grep "&lt;none&gt;" | awk '{print $3}' | xargs sudo docker rmi
+</code></pre>
+
+<p>Also data from stopped containers tend to accumulate. In order to remove all container data (<strong>only do when no containers are running</strong>) do</p>
+
+<pre><code>$ sudo docker rm `sudo docker ps -a -q`
+</code></pre>
+      </section>
+      <footer>
+        <p>Project maintained by <a href="https://github.com/anantasty">anantasty</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-25796498-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
