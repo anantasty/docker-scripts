@@ -6,6 +6,8 @@ MAINTAINER anantasty anant.asty@gmail.com
 ENV SPARK_WORKER_PORT 8888
 EXPOSE 8888
 
+RUN apt-get install -y ipython
+RUN apt-get install -y ipython-notebook
 ADD files /root/spark_shell_files
 
 # Add the entrypoint script for the master

@@ -28,4 +28,4 @@ echo "starting Spark Shell"
 
 cd $SPARK_HOME
 
-sudo -u hdfs MASTER=spark://master:7077  ./bin/pyspark
+sudo -u hdfs MASTER=spark://master:7077  IPYTHON=1 ./bin/pyspark

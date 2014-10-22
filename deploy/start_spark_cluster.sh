@@ -52,6 +52,7 @@ function print_cluster_info() {
     echo ""
     echo "***********************************************************************"
     echo "start shell via:            $1"
+    echo "start python shell via:     $2"
     echo ""
     echo "visit Spark WebUI at:       http://$MASTER_IP:8080/"
     echo "visit Hadoop Namenode at:   http://$MASTER_IP:50070"
