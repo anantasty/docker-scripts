@@ -14,7 +14,7 @@ image_type="?"
 DEBUG=1
 
 # TODO: remove redundant image list definition (source from file common to deploy.sh)
-spark_shell_images=( "amplab/spark-shell:0.9.0" "amplab/spark-shell:0.9.1" "amplab/spark-shell:1.0.0")
+spark_shell_images=( "amplab/spark-shell:1.1.0" "spark-shell:1.1.0" "spark-shell-py:1.1.0")
 shark_shell_images=( "amplab/shark-shell:0.8.0" )
 
 # TODO: unify with deploy.sh
@@ -46,6 +46,10 @@ function parse_options() {
         case $opt in
         i)
             echo "$OPTARG" | grep "spark-shell:" > /dev/null;
+            if [ "$?" -eq 0 ]; then
+                image_type="spark"
+            fi
+            echo "$OPTARG" | grep "spark-shell-py:" > /dev/null;
             if [ "$?" -eq 0 ]; then
                 image_type="spark"
             fi
@@ -103,6 +107,7 @@ function set_nameserver_data() {
 # starts the spark/shark shell container
 function start_shell() {
     IMAGENAME="$image_name:$image_version"
+    echo $IMAGENAME
     NAMESERVER_IP=$(docker inspect $NAMESERVER_ID | \
         grep IPAddress | awk '{print $2}' | tr -d '":,')
 

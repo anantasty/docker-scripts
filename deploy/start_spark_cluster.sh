@@ -84,7 +84,7 @@ function get_num_registered_workers() {
 function wait_for_master {
     if [[ "$SPARK_VERSION" == "0.7.3" ]]; then
         query_string="INFO HttpServer: akka://sparkMaster/user/HttpServer started"
-    elif [[ "$SPARK_VERSION" == "1.0.0" ]]; then
+    elif [[ "$SPARK_VERSION" == "1.1.0" ]]; then
         query_string="MasterWebUI: Started MasterWebUI"
     else
         query_string="MasterWebUI: Started Master web UI"

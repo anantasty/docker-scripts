@@ -3,7 +3,7 @@
 DEBUG=0
 BASEDIR=$(cd $(dirname $0); pwd)
 
-spark_images=( "amplab/spark:0.9.0" "amplab/spark:0.9.1" "amplab/spark:1.0.0")
+spark_images=( "amplab/spark:0.9.0" "amplab/spark:0.9.1" "amplab/spark:1.1.0")
 shark_images=( "amplab/shark:0.8.0" )
 NAMESERVER_IMAGE="amplab/dnsmasq-precise"
 
@@ -115,6 +115,7 @@ start_master ${image_name}-master $image_version
 wait_for_master
 if [ "$image_type" == "spark" ]; then
     SHELLCOMMAND="sudo $BASEDIR/start_shell.sh -i ${image_name}-shell:$SPARK_VERSION -n $NAMESERVER $VOLUME_MAP"
+    PYSHELLCOMMAND="sudo $BASEDIR/start_shell.sh -i ${image_name}-shell-py:$SPARK_VERSION -n $NAMESERVER $VOLUME_MAP"
 elif [ "$image_type" == "shark" ]; then
     SHELLCOMMAND="sudo $BASEDIR/start_shell.sh -i ${image_name}-shell:$SHARK_VERSION -n $NAMESERVER $VOLUME_MAP"
 fi
@@ -128,7 +129,7 @@ until [[  "$NUM_REGISTERED_WORKERS" == "$NUM_WORKERS" ]]; do
     get_num_registered_workers
 done
 echo ""
-print_cluster_info "$SHELLCOMMAND"
+print_cluster_info "$SHELLCOMMAND" "$PYSHELLCOMMAND"
 if [[ "$start_shell" -eq 1 ]]; then
     SHELL_ID=$($SHELLCOMMAND | tail -n 1 | awk '{print $4}')
     sudo docker attach $SHELL_ID
