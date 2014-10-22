@@ -59,8 +59,8 @@ $ sudo ./deploy/deploy.sh
 usage: ./deploy.sh -i &lt;image&gt; [-w &lt;&#35;workers&gt;] [-v &lt;data_directory&gt;] [-c]
 
   image:    spark or shark image from:
-                 amplab/spark:0.9.0  amplab/spark:0.9.1  amplab/spark:1.0.0
-                 amplab/shark:0.8.0
+                 spark:1.0.0  spark:1.1.0
+                 shark:0.8.0
 </pre>
 
 The script either starts a standalone Spark cluster or a standalone
@@ -99,7 +99,7 @@ Starting from the directory in which the repository was cloned do
 
 #### Deploy the cluster
 
-	$ sudo ./deploy/deploy.sh -i amplab/spark:0.9.0 -w 3 
+	$ sudo ./deploy/deploy.sh -i amplab/spark:1.1.0 -w 3 
 
 #### Wait a few seconds
 
