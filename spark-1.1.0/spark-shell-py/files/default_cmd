@@ -12,11 +12,13 @@ cp /root/spark_shell_files/test.txt /tmp
 echo "COPYING DATA FILES"
 cp /root/spark_shell_files/NYSE_daily_prices_A.csv /tmp
 cp /root/spark_shell_files/NYSE_dividends_A.csv /tmp
+cp /root/spark_shell_files/log_file.log /tmp
+
 sudo -u hdfs hadoop dfsadmin -safemode wait
 sudo -u hdfs hadoop fs -put /tmp/test.txt hdfs://master:9000/user/hdfs/test.txt
 sudo -u hdfs hadoop fs -put /tmp/NYSE_dividends_A.csv hdfs://master:9000/user/hdfs/NYSE_dividends_A.csv
 sudo -u hdfs hadoop fs -put /tmp/NYSE_daily_prices_A.csv hdfs://master:9000/user/hdfs/NYSE_daily_prices_A.csv
-
+sudo -u hdfs hadoop fs -put /tmp/log_file.log hdfs://master:9000/user/hdfs/log_file.log
 cp /root/spark_shell_files/test.spark /
 
 # Note: there are issues if the nameserver did not have time to
