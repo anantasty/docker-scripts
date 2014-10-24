@@ -15,7 +15,7 @@ cp /root/spark_shell_files/*.log /tmp
 
 sudo -u hdfs hadoop dfsadmin -safemode wait
 sudo -u hdfs hadoop fs -put /tmp/test.txt hdfs://master:9000/user/hdfs/test.txt
-sudo -u hdfs hadoop fs -put /tmp/*.csv hdfs://master:9000/user/hdfs/NYSE_dividends_A.csv
+sudo -u hdfs hadoop fs -put /tmp/*.csv hdfs://master:9000/user/hdfs/
 sudo -u hdfs hadoop fs -put /tmp/*.log hdfs://master:9000/user/hdfs/
 
 cp /root/spark_shell_files/test.spark /
