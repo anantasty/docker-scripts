@@ -7,6 +7,6 @@ ENV SPARK_WORKER_PORT 8888
 EXPOSE 8888
 
 ADD files /root/spark_shell_files
-
+RUN apt-get install -y git
 # Add the entrypoint script for the master
 ENTRYPOINT ["/root/spark_shell_files/default_cmd"]

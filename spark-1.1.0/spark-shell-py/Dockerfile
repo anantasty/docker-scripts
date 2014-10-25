@@ -9,6 +9,7 @@ EXPOSE 8888
 RUN apt-get install -y ipython
 RUN apt-get install -y ipython-notebook
 RUN apt-get install -y python-numpy python-scipy python-matplotlib
+RUN apt-get install -y git
 ADD files /root/spark_shell_files
 
 # Add the entrypoint script for the master

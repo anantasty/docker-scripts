@@ -20,6 +20,11 @@ sudo -u hdfs hadoop fs -put /tmp/*.log hdfs://master:9000/user/hdfs/
 
 cp /root/spark_shell_files/test.spark /
 
+cd /root
+git clone git@github.com:anantasty/spark-examples.git
+cd spark-examples/data
+cp * hdfs://master:9000/user/hdfs/
+
 # Note: there are issues if the nameserver did not have time to
 # refresh its cache with this shell's hostname so give him time
 # to do so.
